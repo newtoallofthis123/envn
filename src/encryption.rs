@@ -1,81 +1,26 @@
-//! Warning: This code was taken __directly__ from the docs and ChatGPT
-// TODO: Actually understand this code
-// for now, all I need is the key and plaintext as the b"string"
+use aes_gcm::{Key, Aes256Gcm, KeyInit, aead::{OsRng, Nonce, Aead}, AeadCore};
 
-use crypto::aes::{self, KeySize};
-use crypto::blockmodes::NoPadding;
-use crypto::buffer::{BufferResult, ReadBuffer, WriteBuffer};
-use rand::RngCore;
-
-pub fn generate_aes_key(key_size: usize) -> Vec<u8> {
-    let mut key = vec![0u8; key_size];
-    let mut rng = rand::thread_rng();
-    rng.fill_bytes(&mut key); 
-    key
+pub fn get_key()-> Key<Aes256Gcm>{
+    let key = Aes256Gcm::generate_key(OsRng);
+    return key;
 }
 
-pub fn encrypt(key: &[u8], normal_text: &[u8]) -> Result<Vec<u8>, crypto::symmetriccipher::SymmetricCipherError> {
-    let plaintext = add_padding(&mut normal_text.to_vec(), 16);
-
-    // Create an AES encryptor with the given key
-    let mut encryptor = aes::ecb_encryptor(KeySize::KeySize128, key, NoPadding);
-
-    // Initialize buffers
-    let mut read_buffer = crypto::buffer::RefReadBuffer::new(&plaintext);
-    let mut buffer = [0; 16];
-    let mut write_buffer = crypto::buffer::RefWriteBuffer::new(&mut buffer);
-
-    let mut ciphertext = Vec::new();
-
-    // Perform encryption
-    loop {
-        let result = encryptor.encrypt(&mut read_buffer, &mut write_buffer, true)?;
-        ciphertext.extend(write_buffer.take_read_buffer().take_remaining());
-        
-        match result {
-            BufferResult::BufferUnderflow => break,
-            BufferResult::BufferOverflow => {}
-        }
-    }
-
-    Ok(ciphertext)
+pub fn get_none()-> Nonce<Aes256Gcm>{
+    let nonce = Aes256Gcm::generate_nonce(OsRng);
+    return nonce;
 }
 
-pub fn decrypt(key: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>, crypto::symmetriccipher::SymmetricCipherError> {
-    // Create an AES decryptor with the given key
-    let mut decryptor = aes::ecb_decryptor(KeySize::KeySize128, key, NoPadding);
+pub fn encrypt(key: Key<Aes256Gcm>, nonce: Nonce<Aes256Gcm>, data: &[u8])-> Vec<u8>{
+    let cipher = Aes256Gcm::new(&key);
 
-    // Initialize buffers
-    let mut read_buffer = crypto::buffer::RefReadBuffer::new(ciphertext);
-    let mut buffer = [0; 16];
-    let mut write_buffer = crypto::buffer::RefWriteBuffer::new(&mut buffer);
-
-    let mut plaintext = Vec::new();
-
-    // Perform decryption
-    loop {
-        let result = decryptor.decrypt(&mut read_buffer, &mut write_buffer, true)?;
-        plaintext.extend(write_buffer.take_read_buffer().take_remaining());
-        
-        match result {
-            BufferResult::BufferUnderflow => break,
-            BufferResult::BufferOverflow => {}
-        }
-    }
-
-    Ok(plaintext)
+    let ciphertext = cipher.encrypt(&nonce, data.as_ref()).unwrap();
+    return ciphertext;
 }
 
-pub fn add_padding(data: &mut Vec<u8>, block_size: usize) -> Vec<u8> {
-    let padding = block_size - (data.len() % block_size);
-    for _ in 0..padding {
-        data.push(padding as u8);
-    }
-    data.clone()
-}
+pub fn decrypt(key: Key<Aes256Gcm>, nonce: Nonce<Aes256Gcm>, data: Vec<u8>)-> Vec<u8>{ 
+    let cipher = Aes256Gcm::new(&key);
+    let nonce = Nonce::<Aes256Gcm>::from_slice(nonce.as_ref());
 
-pub fn depad(data: &mut Vec<u8> ) -> Vec<u8> {
-    let padding = data[data.len() - 1] as usize;
-    data.truncate(data.len() - padding);
-    data.clone()
+    let plaintext = cipher.decrypt(&nonce, data.as_ref()).unwrap();
+    return plaintext;
 }
