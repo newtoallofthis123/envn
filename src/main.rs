@@ -11,6 +11,9 @@ struct Args {
 
     #[arg(required = false)]
     name: Option<String>,
+
+    #[arg(required = false, short, long)]
+    password: Option<String>,
 }
 
 mod commands;
@@ -28,6 +31,11 @@ fn main() {
     let args = get_args();
 
     inputs::print_splash_screen();
+
+    if args.cmd.clone().unwrap_or("help".to_string()) == "help" {
+        utils::display_help(args.name);
+        std::process::exit(0);
+    }
 
     // for ux, we make sure that the password file exists
     // before we do anything else
@@ -50,21 +58,25 @@ fn main() {
 
     // Small piece of code that checks if the user
     // has entered the correct password
-    if !utils::check_password() && !flag {
+    if !utils::check_password(args.password) && !flag {
         bunt::println!("{$red}Error with Password:({/$}");
         std::process::exit(1);
     }
 
     let cmd = args.cmd;
 
+    let accepted = vec!["set", "get", "add", "load", "show"];
+
     if cmd.is_none() {
-        inquire::Select::new("Enter a command", vec!["set", "get", "add", "load", "all"])
+        inquire::Select::new("Enter a command", accepted.clone())
             .prompt()
             .unwrap()
             .to_string();
     }
 
+    if !accepted.contains(&cmd.clone().unwrap().as_str()){
+        bunt::println!("Sorry, the command {} doesn't exist/is'nt implemented", cmd.clone().unwrap());
+    }
     db::prepare_db();
-
     commands::handle_command(&cmd.unwrap(), args.name);
 }

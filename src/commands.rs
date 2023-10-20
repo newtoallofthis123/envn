@@ -8,7 +8,7 @@ pub fn handle_command(cmd: &str, name: Option<String>) {
         "set" => set_command(),
         "load" => file_command(name),
         "add" => append_env(name),
-        "all" => all_command(),
+        "show" => all_command(),
         _ => bunt::println!(
             "{$red}Command Not Found{/$}\nUse {$yellow}envn help{/$} to see available commands"
         ),
@@ -127,8 +127,13 @@ fn file_command(filename: Option<String>) {
 }
 
 fn all_command() {
-    bunt::println!("The {$yellow}All{/$}");
+    bunt::println!("The {$yellow}Show{/$}");
     let envs = crate::db::get_all_names();
+
+    if envs.is_empty() {
+        bunt::println!("{$red}No Secrets Found{/$}");
+        return;
+    }
 
     for env in envs {
         crate::utils::display_env(env);

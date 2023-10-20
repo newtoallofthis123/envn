@@ -1,13 +1,14 @@
-use std::{
-    ffi::OsStr,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 pub fn get_config_path() -> PathBuf {
     let platform = match std::env::consts::OS {
         "windows" => "USERPROFILE",
-        "unix" => "HOME",
-        _ => panic!("Unsupported platform"),
+        "linux" => "HOME",
+        "macos" => "HOME",
+        _ => {
+            println!("{}", std::env::consts::OS);
+            panic!("Unsupported platform")
+        }
     };
 
     let home_path = std::env::var_os(platform).expect("Failed to get home directory");

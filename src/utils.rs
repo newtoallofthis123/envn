@@ -2,7 +2,7 @@ use aes_gcm::{Aes256Gcm, Key, Nonce};
 
 use crate::{
     db::Entry,
-    file::{file_exists, set_password},
+    file::{file_exists, set_password}    
 };
 
 #[derive(Debug)]
@@ -19,11 +19,19 @@ pub struct DisplayEnv {
     pub value: String,
 }
 
-pub fn check_password() -> bool {
-    let password = inquire::Password::new("Enter your password 👀")
-        .without_confirmation()
-        .prompt()
-        .expect("Failed to get password");
+pub fn check_password(password: Option<String>) -> bool {
+    let password = match password {
+        Some(password) => {
+            password
+        },
+        None =>{
+            inquire::Password::new("Enter your password 👀")
+            .without_confirmation()
+            .prompt()
+            .unwrap()
+        }
+    };
+
     let key_file = crate::file::get_path("auth");
 
     if !file_exists(&key_file) {
@@ -82,4 +90,38 @@ pub fn display_env(env: DisplayEnv) {
     bunt::println!("{$yellow}Name{/$}: {$green}{}{/$}", env.name);
     bunt::println!("{$yellow}Key{/$}: {$green}{}{/$}", env.key);
     bunt::println!("{$yellow}Value{/$}: {$green}{}{/$}", env.value);
+}
+
+pub fn display_help(cmd: Option<String>){
+    let cmd = cmd.unwrap_or("all".to_string());
+    bunt::println!("The Premium Secret Manager\n");
+
+    bunt::println!("{$underline}Usage:{/$} {$green}evnv{/$} {$yellow}[command] [name]{/$}");
+
+    match cmd.as_str(){
+        "get" => {
+            bunt::println!("{$blue}Get{/$} a secret");
+            bunt::println!("envn {$green}get{/$} [name]");
+        },
+        "set" => {
+            bunt::println!("{$blue}Set{/$} a secret");
+            bunt::println!("envn {$green}set{/$}");
+        },
+        "add" => {
+            bunt::println!("{$blue}Add{/$} a secret to a file");
+            bunt::println!("envn {$green}add{/$} [name]");
+        },
+        "load" => {
+            bunt::println!("{$blue}Load{/$} a file");
+            bunt::println!("envn {$green}load{/$} [name]");
+        },
+        "show" => {
+            bunt::println!("{$blue}Show{/$} all secrets");
+            bunt::println!("envn {$green}show{/$}");
+        },
+        _ => {
+            bunt::println!("Available Commands: get, set, add, load, show");
+            bunt::println!("Use envn help {$yellow}[command]{/$} to see more info about a command");
+        }
+    }
 }
