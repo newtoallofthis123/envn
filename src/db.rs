@@ -1,6 +1,6 @@
 use rusqlite::{Connection, params};
 
-use crate::{file::get_path, utils::Env};
+use crate::{file::get_path, utils::{Env, DisplayEnv}};
 
 pub struct Entry{
     pub id: i32,
@@ -35,7 +35,7 @@ pub fn insert_env(env: Env)->bool{
     return true;
 }
 
-pub fn get_by_name(name: &str)->Entry{
+pub fn get_by_name(name: &str)->Option<Entry>{
     let conn = connect_to_db();
     let mut stmt = conn.prepare("SELECT * FROM envs WHERE name = ?1").expect("Failed to prepare");
     let mut rows = stmt.query(params![name]).expect("Failed to query");
@@ -45,12 +45,20 @@ pub fn get_by_name(name: &str)->Entry{
     let key: String = row.get(2).expect("Failed to get key");
     let value: Vec<u8> = row.get(3).expect("Failed to get value");
 
-    return Entry{
+    return Some(Entry{
         id,
         name,
         key,
         value
-    }
+    });
+}
+
+pub fn does_exist(name: &str)->bool{
+    let conn = connect_to_db();
+    let mut stmt = conn.prepare("SELECT * FROM envs WHERE name = ?1").expect("Failed to prepare");
+    let mut rows = stmt.query(params![name]).expect("Failed to query");
+    let row = rows.next().expect("Failed to get row");
+    return row.is_some();
 }
 
 pub fn delete_entry_by_name(name: &str)->bool{
@@ -58,4 +66,31 @@ pub fn delete_entry_by_name(name: &str)->bool{
     let mut stmt = conn.prepare("DELETE FROM envs WHERE name = ?1").expect("Failed to prepare");
     let _ = stmt.execute(params![name]).expect("Failed to execute");
     return true;
+}
+
+pub fn get_all_names()->Vec<DisplayEnv>{
+    let conn = connect_to_db();
+    let mut stmt = conn.prepare("SELECT * FROM envs").expect("Failed to prepare");
+    let mut rows = stmt.query([]).expect("Failed to query");
+    let mut envs = Vec::new();
+
+    while let Some(row) = rows.next().expect("Failed to get row"){
+        let id: i32 = row.get(0).expect("Failed to get id");
+        let name: String = row.get(1).expect("Failed to get name");
+        let key: String = row.get(2).expect("Failed to get key");
+        let value: Vec<u8> = row.get(3).expect("Failed to get value");
+
+        let env = Entry{
+            id,
+            name,
+            key,
+            value
+        };
+
+        let env = crate::utils::decrypt_struct(env);
+
+        envs.push(env);
+    }
+
+    return envs;
 }

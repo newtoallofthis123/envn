@@ -7,6 +7,9 @@ use clap::Parser;
 struct Args {
     #[arg(required = false, short)]
     cmd: Option<String>,
+
+    #[arg(required = false, short)]
+    name: Option<String>
 }
 
 mod commands;
@@ -34,19 +37,9 @@ fn main() {
 
     let cmd = args
         .cmd
-        .unwrap_or(inputs::get_input("Enter your command", None));
-
-    commands::handle_command(&cmd);
+        .unwrap_or(inquire::Select::new("Enter a command", vec!["set", "get", "file", "load"]).prompt().unwrap().to_string());
 
     db::prepare_db();
 
-    let env_to_insert = utils::construct_struct("cool".to_string(), "COOL_ONE".to_string(), "noice".to_string());
-
-    db::insert_env(env_to_insert);
-
-    let env = db::get_by_name("cool");
-
-    let decrypted_env = utils::decrypt_struct(env);
-
-    println!("{:?}", decrypted_env);
+    commands::handle_command(&cmd, args.name);
 }

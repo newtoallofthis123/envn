@@ -54,3 +54,10 @@ pub fn decrypt_struct(entry: Entry)->DisplayEnv{
         value,
     }
 }
+
+pub fn display_env(env: DisplayEnv){
+    bunt::println!("{$blue}Showing Secret Secret{/$}");
+    bunt::println!("{$yellow}Name{/$}: {$green}{}{/$}", env.name);
+    bunt::println!("{$yellow}Key{/$}: {$green}{}{/$}", env.key);
+    bunt::println!("{$yellow}Value{/$}: {$green}{}{/$}", env.value);
+}
