@@ -1,4 +1,7 @@
-use std::{ffi::OsStr, path::{Path, PathBuf}};
+use std::{
+    ffi::OsStr,
+    path::{Path, PathBuf},
+};
 
 //TODO: Implement dynamic path for config file
 pub fn get_config_path() -> &'static OsStr {
@@ -18,13 +21,12 @@ pub fn file_exists(path: &Path) -> bool {
 pub fn write_file(path: &Path, content: String) -> bool {
     //TODO: Add warning if file exists
     let _ = std::fs::write(path, content);
-    return true;
+    true
 }
 
 pub fn get_path(joiner: &str) -> PathBuf {
     let path = Path::new(crate::file::get_config_path());
-    let final_path = path.join(joiner);
-    return final_path.clone();
+    path.join(joiner).clone()
 }
 
 pub fn set_password() -> bool {
@@ -36,14 +38,14 @@ pub fn set_password() -> bool {
     // hash the password
     let hashed = bcrypt::hash(password, bcrypt::DEFAULT_COST).expect("Failed to hash password");
 
-    return write_file(&key_file, hashed);
+    write_file(&key_file, hashed)
 }
 
-pub fn get_keys_and_nonce()-> (Vec<u8>, Vec<u8>) {
+pub fn get_keys_and_nonce() -> (Vec<u8>, Vec<u8>) {
     let key_path = get_path("key");
     let nonce_path = get_path("nonce");
 
-    if !file_exists(&key_path){
+    if !file_exists(&key_path) || !file_exists(&nonce_path) {
         let key = crate::encryption::get_key();
         let nonce = crate::encryption::get_nonce();
 
@@ -55,5 +57,5 @@ pub fn get_keys_and_nonce()-> (Vec<u8>, Vec<u8>) {
     let key = std::fs::read(key_path).expect("Failed to read key file");
     let nonce = std::fs::read(nonce_path).expect("Failed to read nonce file");
 
-    return (key, nonce)
+    (key, nonce)
 }
