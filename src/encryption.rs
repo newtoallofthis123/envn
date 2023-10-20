@@ -5,7 +5,7 @@ pub fn get_key()-> Key<Aes256Gcm>{
     return key;
 }
 
-pub fn get_none()-> Nonce<Aes256Gcm>{
+pub fn get_nonce()-> Nonce<Aes256Gcm>{
     let nonce = Aes256Gcm::generate_nonce(OsRng);
     return nonce;
 }

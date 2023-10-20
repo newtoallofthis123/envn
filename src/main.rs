@@ -10,11 +10,11 @@ struct Args {
 }
 
 mod commands;
+mod db;
 mod encryption;
 mod file;
 mod inputs;
 mod utils;
-mod db;
 
 fn get_args() -> Args {
     Args::parse()
@@ -27,29 +27,26 @@ fn main() {
 
     // Small piece of code that checks if the user
     // has entered the correct password
-    //if !utils::check_password() {
-      //  bunt::println!("{$red}Error with Password:({/$}");
-        //std::process::exit(1);
-    //}
+    if !utils::check_password() {
+        bunt::println!("{$red}Error with Password:({/$}");
+        std::process::exit(1);
+    }
 
-    //let cmd = args
-      //  .cmd
-        //.unwrap_or(inputs::get_input("Enter your command", None));
+    let cmd = args
+        .cmd
+        .unwrap_or(inputs::get_input("Enter your command", None));
 
-    //commands::handle_command(&cmd);
-    
-    let key = encryption::get_key();
-    let nonce = encryption::get_none();
+    commands::handle_command(&cmd);
 
-    let data = "Hello World";
+    db::prepare_db();
 
-    println!("Data: {:?}", data.as_bytes());
+    let env_to_insert = utils::construct_struct("cool".to_string(), "COOL_ONE".to_string(), "noice".to_string());
 
-    let encrypted_data = encryption::encrypt(key, nonce.clone(), data.as_bytes());
+    db::insert_env(env_to_insert);
 
-    println!("Encrypted Data: {:?}", encrypted_data);
+    let env = db::get_by_name("cool");
 
-    let decrypted_data = encryption::decrypt(key, nonce.clone(), encrypted_data);
+    let decrypted_env = utils::decrypt_struct(env);
 
-    println!("Decrypted Data: {:?}", decrypted_data);
+    println!("{:?}", decrypted_env);
 }
