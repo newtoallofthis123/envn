@@ -11,8 +11,6 @@ pub fn _get_input(msg: &str, default: Option<String>) -> String {
         text_input.clone().with_default(default);
     }
 
-    
-
     text_input
         .prompt()
         .unwrap_or_else(|_| panic!("Failed to get input for {}", msg))

@@ -77,7 +77,7 @@ fn file_command(filename: Option<String>) {
     env_names.push("quit".to_string());
     let mut envs_to_write: Vec<DisplayEnv> = Vec::new();
 
-    loop{
+    loop {
         if env_names.len() == 1 {
             break;
         }
