@@ -1,6 +1,10 @@
 use std::{io::Write, path::Path};
 
-use crate::{file::file_exists, utils::DisplayEnv};
+use crate::{
+    file::{self, file_exists},
+    utils::DisplayEnv,
+};
+use bunt::println as print;
 
 pub fn handle_command(cmd: &str, name: Option<String>) {
     match cmd {
@@ -9,14 +13,14 @@ pub fn handle_command(cmd: &str, name: Option<String>) {
         "load" => file_command(name),
         "add" => append_env(name),
         "show" => all_command(),
-        _ => bunt::println!(
+        _ => print!(
             "{$red}Command Not Found{/$}\nUse {$yellow}envn help{/$} to see available commands"
         ),
     }
 }
 
 fn set_command() {
-    bunt::println!("The {$yellow}Setter{/$}");
+    print!("The {$yellow}Setter{/$}");
 
     let key = inquire::Text::new("Secret Name").prompt().unwrap();
     let value = inquire::Text::new("Secret Value").prompt().unwrap();
@@ -27,14 +31,14 @@ fn set_command() {
     let env_entry = crate::utils::construct_struct(name, key, value);
 
     if crate::db::insert_env(env_entry) {
-        bunt::println!("{$green}Secret Saved{/$}");
+        print!("{$green}Secret Saved{/$}");
     } else {
-        bunt::println!("{$red}Secret Not Saved{/$}");
+        print!("{$red}Secret Not Saved{/$}");
     }
 }
 
 fn get_command(name: Option<String>) {
-    bunt::println!("The {$yellow}Getter{/$}");
+    print!("The {$yellow}Getter{/$}");
 
     let name = match name {
         Some(name) => name,
@@ -42,7 +46,7 @@ fn get_command(name: Option<String>) {
     };
 
     if !crate::db::does_exist(&name) {
-        bunt::println!("{$red}Secret Not Found{/$}");
+        print!("{$red}Secret Not Found{/$}");
         return;
     }
 
@@ -56,82 +60,102 @@ fn get_command(name: Option<String>) {
 }
 
 fn file_command(filename: Option<String>) {
-    bunt::println!("The {$yellow}File{/$}");
-    bunt::println!(
-        "Pressing enter will take you into add mode. Just press 'quit' to exit add mode"
-    );
+    if filename.is_some() {
+        if !file_exists(Path::new(filename.as_ref().unwrap())) {
+            print!("{$red}No .env file found to load/ file path is incorrect{/$}");
+            return;
+        } else {
+            let confirm = inquire::Confirm::new("Duplicate keys will be overwritten!!")
+                .with_default(true)
+                .prompt()
+                .unwrap();
+            if !confirm {
+                return;
+            }
 
-    let confirm = inquire::Confirm::new("Enter add mode")
-        .with_default(true)
-        .prompt()
-        .unwrap();
-    if !confirm {
-        return;
-    }
-
-    let envs = crate::db::get_all_names();
-    let mut env_names = envs
-        .iter()
-        .map(|env| env.name.clone())
-        .collect::<Vec<String>>();
-    env_names.push("quit".to_string());
-    let mut envs_to_write: Vec<DisplayEnv> = Vec::new();
-
-    loop {
-        if env_names.len() == 1 {
-            break;
+            let envs = file::load_file_to_insert_in_db(Path::new(filename.as_ref().unwrap()));
+            for env in envs {
+                crate::db::insert_env(env);
+            }
+            print!("{$green}File Loaded{/$}");
+            return;
         }
+    } else {
+        print!("The {$yellow}File{/$}");
+        print!("Pressing enter will take you into add mode. Just press 'quit' to exit add mode");
 
-        let to_add = inquire::Select::new("Select a secret to add", env_names.clone())
+        let confirm = inquire::Confirm::new("Enter add mode")
+            .with_default(true)
             .prompt()
             .unwrap();
-
-        if to_add == "quit" {
-            break;
+        if !confirm {
+            return;
         }
 
-        if !env_names.contains(&to_add) {
-            bunt::println!("{$red}Secret Not Found{/$}");
-            continue;
+        let envs = crate::db::get_all_names();
+        let mut env_names = envs
+            .iter()
+            .map(|env| env.name.clone())
+            .collect::<Vec<String>>();
+        env_names.push("quit".to_string());
+        let mut envs_to_write: Vec<DisplayEnv> = Vec::new();
+
+        loop {
+            if env_names.len() == 1 {
+                break;
+            }
+
+            let to_add = inquire::Select::new("Select a secret to add", env_names.clone())
+                .prompt()
+                .unwrap();
+
+            if to_add == "quit" {
+                break;
+            }
+
+            if !env_names.contains(&to_add) {
+                print!("{$red}Secret Not Found{/$}");
+                continue;
+            }
+
+            let env = crate::db::get_by_name(&to_add).unwrap();
+            let final_env = crate::utils::decrypt_struct(env);
+            envs_to_write.push(final_env);
+
+            print!("{$yellow}Secret Added{/$}");
+
+            env_names.remove(env_names.iter().position(|x| *x == to_add).unwrap());
         }
 
-        let env = crate::db::get_by_name(&to_add).unwrap();
-        let final_env = crate::utils::decrypt_struct(env);
-        envs_to_write.push(final_env);
+        print!(
+            "Loaded {$yellow}{}{/$} secrets to memory",
+            envs_to_write.len()
+        );
 
-        bunt::println!("{$yellow}Secret Added{/$}");
+        let filename = match filename {
+            Some(filename) => filename,
+            None => inquire::Text::new("File Name").prompt().unwrap(),
+        };
 
-        env_names.remove(env_names.iter().position(|x| *x == to_add).unwrap());
+        let file = std::fs::File::create(filename).unwrap();
+        let mut writer = std::io::BufWriter::new(file);
+
+        for env in envs_to_write {
+            //format as key=value
+            let line = format!("{}={}\n", env.key, env.value);
+            writer.write_all(line.as_bytes()).unwrap();
+        }
+
+        print!("{$green}File Saved{/$}");
     }
-
-    bunt::println!(
-        "Loaded {$yellow}{}{/$} secrets to memory",
-        envs_to_write.len()
-    );
-
-    let filename = match filename {
-        Some(filename) => filename,
-        None => inquire::Text::new("File Name").prompt().unwrap(),
-    };
-
-    let file = std::fs::File::create(filename).unwrap();
-    let mut writer = std::io::BufWriter::new(file);
-
-    for env in envs_to_write {
-        //format as key=value
-        let line = format!("{}={}\n", env.key, env.value);
-        writer.write_all(line.as_bytes()).unwrap();
-    }
-
-    bunt::println!("{$green}File Saved{/$}");
 }
 
 fn all_command() {
-    bunt::println!("The {$yellow}Show{/$}");
+    print!("The {$yellow}Show{/$}");
     let envs = crate::db::get_all_names();
 
     if envs.is_empty() {
-        bunt::println!("{$red}No Secrets Found{/$}");
+        print!("{$red}No Secrets Found{/$}");
         return;
     }
 
@@ -141,7 +165,7 @@ fn all_command() {
 }
 
 fn append_env(name: Option<String>) {
-    bunt::println!("The {$yellow}Appender{/$}");
+    print!("The {$yellow}Appender{/$}");
 
     let name = match name {
         Some(name) => name,
@@ -149,7 +173,7 @@ fn append_env(name: Option<String>) {
     };
 
     if !crate::db::does_exist(&name) {
-        bunt::println!("{$red}Secret Not Found{/$}");
+        print!("{$red}Secret Not Found{/$}");
         return;
     }
 
@@ -170,5 +194,5 @@ fn append_env(name: Option<String>) {
 
     file.write_all(line.as_bytes()).unwrap();
 
-    bunt::println!("{$green}Secret Appended{/$}");
+    print!("{$green}Secret Appended{/$}");
 }

@@ -1,4 +1,9 @@
-use std::path::{Path, PathBuf};
+use std::{
+    io::BufRead,
+    path::{Path, PathBuf},
+};
+
+use crate::utils::{construct_struct, Env};
 
 pub fn get_config_path() -> PathBuf {
     let platform = match std::env::consts::OS {
@@ -65,4 +70,25 @@ pub fn get_keys_and_nonce() -> (Vec<u8>, Vec<u8>) {
     let nonce = std::fs::read(nonce_path).expect("Failed to read nonce file");
 
     (key, nonce)
+}
+pub fn load_file_to_insert_in_db(path: &Path) -> Vec<Env> {
+    let mut envs: Vec<Env> = Vec::new();
+    let file = std::fs::File::open(path).expect("Failed to open file");
+    let reader = std::io::BufReader::new(file);
+
+    for line in reader.lines() {
+        let line = line.expect("Failed to read line");
+        let split: Vec<&str> = line.split('=').collect();
+
+        if split.len() != 2 {
+            continue;
+        }
+
+        let key = split[0];
+        let value = split[1];
+        let env = construct_struct(key.to_lowercase(), key.to_string(), value.to_string());
+        envs.push(env);
+        println!("Found: (key,value)=({},{})", key, value);
+    }
+    envs
 }

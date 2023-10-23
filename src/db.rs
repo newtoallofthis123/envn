@@ -34,7 +34,7 @@ pub fn prepare_db() {
 pub fn insert_env(env: Env) -> bool {
     let conn = connect_to_db();
     let mut stmt = conn
-        .prepare("INSERT INTO envs (name, key, value) VALUES (?1, ?2, ?3)")
+        .prepare("INSERT OR REPLACE INTO envs (name, key, value) VALUES (?1, ?2, ?3)")
         .expect("Failed to prepare");
     let _ = stmt
         .execute(params![env.name, env.key, env.value])
