@@ -63,7 +63,6 @@ fn file_command(filename: Option<String>) {
     if filename.is_some() {
         if !file_exists(Path::new(filename.as_ref().unwrap())) {
             print!("{$red}No .env file found to load/ file path is incorrect{/$}");
-            return;
         } else {
             let confirm = inquire::Confirm::new("Duplicate keys will be overwritten!!")
                 .with_default(true)
@@ -78,7 +77,6 @@ fn file_command(filename: Option<String>) {
                 crate::db::insert_env(env);
             }
             print!("{$green}File Loaded{/$}");
-            return;
         }
     } else {
         print!("The {$yellow}File{/$}");

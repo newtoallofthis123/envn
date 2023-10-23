@@ -32,7 +32,7 @@ fn main() {
 
     inputs::print_splash_screen();
 
-    if args.cmd.clone().unwrap_or("help".to_string()) == "help" {
+    if args.cmd.clone().unwrap_or("".to_string()) == "help" {
         utils::display_help(args.name);
         std::process::exit(0);
     }
@@ -63,15 +63,15 @@ fn main() {
         std::process::exit(1);
     }
 
-    let cmd = args.cmd;
+    let mut cmd = args.cmd;
 
     let accepted = vec!["set", "get", "add", "load", "show"];
 
     if cmd.is_none() {
-        inquire::Select::new("Enter a command", accepted.clone())
+        cmd = Some(inquire::Select::new("Enter a command", accepted.clone())
             .prompt()
             .unwrap()
-            .to_string();
+            .to_string());
     }
 
     if !accepted.contains(&cmd.clone().unwrap().as_str()){

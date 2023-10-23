@@ -10,7 +10,6 @@ clap={version="4", features=["derive"]}
 bunt="0.2"
 inquire={version ="0.6"}
 bcrypt="0.15"
-indicatif="0.17"
 rand="0.8"
 aes-gcm="0.10.3"
 rusqlite="0.29"
