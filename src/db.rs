@@ -75,7 +75,7 @@ pub fn does_exist(name: &str) -> bool {
     row.is_some()
 }
 
-pub fn _delete_entry_by_name(name: &str) -> bool {
+pub fn delete_entry_by_name(name: &str) -> bool {
     let conn = connect_to_db();
     let mut stmt = conn
         .prepare("DELETE FROM envs WHERE name = ?1")
