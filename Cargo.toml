@@ -2,6 +2,12 @@
 name = "envn"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+keywords = ["env", "secret", "password", "manager", "cli", "rust"]
+readme = "README.md"
+authors = ["Ishan Joshi <noobscience@duck.com>"]
+description = "The Premium Secrets and .env Manager CLI"
+repository = "https://github.com/newtoallofthis123/envn"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
