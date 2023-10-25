@@ -79,16 +79,10 @@ pub fn load_file_to_insert_in_db(path: &Path) -> Vec<Env> {
     for line in reader.lines() {
         let line = line.expect("Failed to read line");
         let split: Vec<&str> = line.split('=').collect();
-
-        if split.len() != 2 {
-            continue;
-        }
-
         let key = split[0];
         let value = split[1];
         let env = construct_struct(key.to_lowercase(), key.to_string(), value.to_string());
         envs.push(env);
-        println!("Found: (key,value)=({},{})", key, value);
     }
     envs
 }

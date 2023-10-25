@@ -27,6 +27,7 @@ pub fn check_password(password: Option<String>) -> bool {
         None =>{
             inquire::Password::new("Enter your password 👀")
             .without_confirmation()
+            .with_display_mode(inquire::PasswordDisplayMode::Masked)
             .prompt()
             .unwrap()
         }

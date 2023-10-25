@@ -1,6 +1,6 @@
 pub fn print_splash_screen() {
     bunt::println!("{$blue}+-+-+-+-+-+-+{/$}");
-    bunt::println!("{$green}|🔒|{/$}{$white}E|V|N|V|{/$}");
+    bunt::println!("{$green}|🔒|{/$}E|V|N|V|");
     bunt::println!("{$yellow}+-+-+-+-+-+-+{/$}");
 }
 

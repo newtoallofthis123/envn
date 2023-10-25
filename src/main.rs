@@ -65,7 +65,7 @@ fn main() {
 
     let mut cmd = args.cmd;
 
-    let accepted = vec!["set", "get", "add", "load", "show", "edit", "delete"];
+    let accepted = vec!["set", "get", "add", "from", "show", "load", "edit", "delete"];
 
     if cmd.is_none() {
         cmd = Some(inquire::Select::new("Enter a command", accepted.clone())
