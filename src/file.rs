@@ -43,6 +43,7 @@ pub fn get_path(joiner: &str) -> PathBuf {
 
 pub fn set_password() -> bool {
     let password = inquire::Password::new("Enter your password 👀")
+        .with_display_mode(inquire::PasswordDisplayMode::Masked)
         .prompt()
         .expect("Failed to get password");
     let key_file = get_path("auth");
@@ -50,6 +51,9 @@ pub fn set_password() -> bool {
     // hash the password
     let hashed = bcrypt::hash(password, bcrypt::DEFAULT_COST).expect("Failed to hash password");
 
+    bunt::println!("{$green}Password Set{/$}");
+    bunt::println!("Restart the program to use the password");
+        
     write_file(&key_file, hashed)
 }
 

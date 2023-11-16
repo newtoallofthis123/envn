@@ -1,35 +1,43 @@
 use std::{io::Write, path::Path};
 
 use crate::{
-    file::{file_exists, self},
-    utils::DisplayEnv,
+    file::{self, file_exists},
+    utils::{DisplayEnv, display_env},
 };
 use bunt::println as print;
 
 pub fn handle_command(cmd: &str, name: Option<String>) {
     match cmd {
         "get" => get_command(name),
-        "set" => set_command(),
-        "load" => file_command(name),
-        "add" => append_env(name),
-        "show" => all_command(),
+        "show" => get_command(name),
+        "add" => add_command(name),
+        "save" => save_command(name),
+        "append" => append_env(name),
+        "all" => all_command(name),
         "edit" => edit_entry(name),
         "delete" => delete_entry(name),
-        "from" => from_file(name),
+        "load" => load_file(name),
+        "reset" => reset_command(name),
         _ => print!(
             "{$red}Command Not Found{/$}\nUse {$yellow}envn help{/$} to see available commands"
         ),
     }
 }
 
-fn set_command() {
+fn add_command(name: Option<String>) {
     print!("The {$yellow}Setter{/$}");
 
-    let key = inquire::Text::new("Secret Name").prompt().unwrap();
-    let value = inquire::Text::new("Secret Value").prompt().unwrap();
-    let name = inquire::Text::new("The identifier for this secret")
-        .prompt()
-        .unwrap();
+    let name = match name {
+        Some(name) => {
+            bunt::println!("{$yellow}Name{/$}: {$green}{}{/$}", name);
+            name
+        },
+        None => inquire::Text::new("The identifier for this secret")
+            .prompt()
+            .unwrap(),
+    };
+    let key = inquire::Text::new("Enter the Key").prompt().unwrap();
+    let value = inquire::Text::new("Enter the Value").prompt().unwrap();
 
     let env_entry = crate::utils::construct_struct(name, key, value);
 
@@ -62,7 +70,7 @@ fn get_command(name: Option<String>) {
     crate::utils::display_env(env);
 }
 
-fn file_command(filename: Option<String>) {
+fn save_command(filename: Option<String>) {
     print!("The {$yellow}File{/$}");
     print!("{$yellow}Warning:{/$} This will {$underline}overwrite{/$} any existing file with the same name");
     print!("Pressing enter will take you into add mode. Just press 'quit' to exit add mode");
@@ -117,7 +125,7 @@ fn file_command(filename: Option<String>) {
 
     let filename = match filename {
         Some(filename) => filename,
-        None => inquire::Text::new("File Name").prompt().unwrap(),
+        None => inquire::Text::new("File Name").with_default(".env").prompt().unwrap(),
     };
 
     let file = std::fs::File::create(filename).unwrap();
@@ -132,7 +140,7 @@ fn file_command(filename: Option<String>) {
     print!("{$green}File Saved{/$}");
 }
 
-fn all_command() {
+fn all_command(range: Option<String>) {
     print!("The {$yellow}Show{/$}");
     let envs = crate::db::get_all_names();
 
@@ -141,8 +149,16 @@ fn all_command() {
         return;
     }
 
-    for env in envs {
-        crate::utils::display_env(env);
+    let range: u8 = match range {
+        Some(range) => range.parse().unwrap(),
+        None => 0,
+    };
+
+    for (i, env) in envs.iter().enumerate() {
+        if range != 0 && i as u8 == range {
+            break;
+        }
+        display_env(env.clone());
     }
 }
 
@@ -228,12 +244,22 @@ fn delete_entry(name: Option<String>) {
         return;
     }
 
-    crate::db::delete_entry_by_name(&name);
+    
+    let confirmation = inquire::Confirm::new("Delete from file as well?")
+        .with_default(true)
+        .prompt()
+        .unwrap();
 
+    if confirmation {
+        crate::db::delete_entry_by_name(&name);
     print!("{$green}Secret Deleted{/$}");
+    } else{
+        print!("{$red}Aborted{/$}");
+    }
+
 }
 
-fn from_file(name: Option<String>){
+fn load_file(name: Option<String>) {
     let name = match name {
         Some(name) => name,
         None => inquire::Text::new("File Name").prompt().unwrap(),
@@ -247,9 +273,8 @@ fn from_file(name: Option<String>){
             .unwrap();
         if !confirm {
             return;
-        }
-        else {
-            file_command(Some(name));
+        } else {
+            save_command(Some(name));
             return;
         }
     }
@@ -266,4 +291,8 @@ fn from_file(name: Option<String>){
     }
 
     print!("{$green}Secrets Saved{/$}");
+}
+
+fn reset_command(command: Option<String>){
+    bunt::println!("{}", command.unwrap_or("".to_string()));
 }
