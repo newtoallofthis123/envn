@@ -1,3 +1,9 @@
+/// This file deals with the i/o operations of the program
+/// No function of this file, expect the handler function, is called directly
+/// nor exported to the main file
+/// Any new command should be added to this file as well
+/// as the handler function
+
 use std::{io::Write, path::Path};
 
 use crate::{

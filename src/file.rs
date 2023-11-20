@@ -5,6 +5,10 @@ use std::{
 
 use crate::utils::{construct_struct, Env};
 
+/// Matches the respectively config path for the operating system and
+/// creates a config directory with the name ".envn" if it does not exist.
+/// This directory is used to store the key, nonce, and auth files.
+/// The main sqlite database is stored in the same directory
 pub fn get_config_path() -> PathBuf {
     let platform = match std::env::consts::OS {
         "windows" => "USERPROFILE",
@@ -26,21 +30,30 @@ pub fn get_config_path() -> PathBuf {
     path
 }
 
+/// Check if a file exists
 pub fn file_exists(path: &Path) -> bool {
     path.exists()
 }
 
+/// Write a file to the specified path
 pub fn write_file(path: &Path, content: String) -> bool {
     //TODO: Add warning if file exists
     let _ = std::fs::write(path, content);
     true
 }
 
+/// Join any path to the config path
 pub fn get_path(joiner: &str) -> PathBuf {
     let path = crate::file::get_config_path();
     path.join(joiner).clone()
 }
 
+/// Sets the password for the database
+/// This password is used for the encryption and decryption of the database
+/// Also, a hashed version of the password is stored in the auth file
+/// The auth algorithm is bcrypt
+/// Which is a hashing algorithm that is used to hash passwords and used to 
+/// verify the password when the user tries to access the database
 pub fn set_password() -> bool {
     let password = inquire::Password::new("Enter your password 👀")
         .with_display_mode(inquire::PasswordDisplayMode::Masked)
@@ -57,6 +70,10 @@ pub fn set_password() -> bool {
     write_file(&key_file, hashed)
 }
 
+/// Gets the keys and the nonce and converts them from
+/// the binary format to the Vec<u8> format
+/// which is more convenient to work with
+/// for the encryption and decryption functions
 pub fn get_keys_and_nonce() -> (Vec<u8>, Vec<u8>) {
     let key_path = get_path("key");
     let nonce_path = get_path("nonce");
@@ -75,6 +92,8 @@ pub fn get_keys_and_nonce() -> (Vec<u8>, Vec<u8>) {
 
     (key, nonce)
 }
+
+/// Loads the data from the file and inserts it into the database
 pub fn load_file_to_insert_in_db(path: &Path) -> Vec<Env> {
     let mut envs: Vec<Env> = Vec::new();
     let file = std::fs::File::open(path).expect("Failed to open file");

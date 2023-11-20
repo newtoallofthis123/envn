@@ -13,6 +13,7 @@ pub struct Env {
 }
 
 #[derive(Debug, Clone)]
+/// A struct representing the display environment.
 pub struct DisplayEnv {
     pub name: String,
     pub key: String,
@@ -23,6 +24,15 @@ fn get_password_from_env() -> Result<String, std::env::VarError> {
     std::env::var("ENVN_PASSWORD")
 }
 
+/// Checks if the provided password is valid.
+///
+/// # Arguments
+///
+/// * `password` - An optional string representing the password to be checked.
+///
+/// # Returns
+///
+/// A boolean value indicating whether the password is valid or not.
 pub fn check_password(password: Option<String>) -> bool {
     let password = match password {
         Some(password) => password,
@@ -58,6 +68,19 @@ pub fn check_password(password: Option<String>) -> bool {
     bcrypt::verify(password, &hashed).expect("Failed to verify password")
 }
 
+/// Constructs a new `Env` struct with the given `name`, `key`, and `value`.
+/// The `value` is encrypted using the `key` and `nonce` that are stored in the `key` and `nonce` files.
+/// This is essentially, the abstraction for the `Env` struct.
+/// 
+/// # Arguments
+///
+/// * `name` - The name of the environment variable.
+/// * `key` - The key of the environment variable.
+/// * `value` - The value of the environment variable.
+///
+/// # Returns
+///
+/// A new `Env` struct with the specified `name`, `key`, and `value`.
 pub fn construct_struct(name: String, key: String, value: String) -> Env {
     let (user_key, nonce) = crate::file::get_keys_and_nonce();
 
@@ -74,6 +97,17 @@ pub fn construct_struct(name: String, key: String, value: String) -> Env {
     }
 }
 
+/// Decrypts a given `Entry` and returns a `DisplayEnv` struct.
+/// The `Entry` is decrypted using the `key` and `nonce` that are stored in the `key` and `nonce` files.
+/// This is essentially, the abstraction for the `DisplayEnv` struct.
+/// 
+/// # Arguments
+///
+/// * `entry` - The `Entry` to be decrypted.
+///
+/// # Returns
+///
+/// The decrypted `DisplayEnv` struct.
 pub fn decrypt_struct(entry: Entry) -> DisplayEnv {
     let (user_key, nonce) = crate::file::get_keys_and_nonce();
     let decrypted_value = crate::encryption::decrypt(

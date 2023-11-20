@@ -1,3 +1,7 @@
+/// This file is responsible for all the database operations
+/// The database used is SQLite
+/// Handles the basic CRUD operations
+
 use rusqlite::{params, Connection};
 
 use crate::{

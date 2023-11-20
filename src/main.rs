@@ -4,7 +4,11 @@ use file::get_path;
 #[derive(Parser, Debug)]
 #[command(name="evnv", author="Ishan Joshi", version, about="Quickly write env's efficiently", long_about = None)]
 
-//? The Args struct is used to parse the command line arguments
+/// The Args struct is used to parse the command line arguments
+/// In order to make the command line arguments more user friendly
+/// the user has the option to not pass in the command name
+/// If the user does not pass in the command name, then the program
+/// will prompt the user to enter the command name
 struct Args {
     #[arg(required = false)]
     cmd: Option<String>,
@@ -20,17 +24,24 @@ mod commands;
 mod db;
 mod encryption;
 mod file;
-mod inputs;
 mod utils;
 
+/// Gets the command line arguments
 fn get_args() -> Args {
     Args::parse()
+}
+
+/// Directly print a cool splash screen
+pub fn print_splash_screen() {
+    bunt::println!("{$blue}+-+-+-+-+-+-+{/$}");
+    bunt::println!("{$green}|🔒|{/$}E|V|N|V|");
+    bunt::println!("{$yellow}+-+-+-+-+-+-+{/$}");
 }
 
 fn main() {
     let args = get_args();
 
-    inputs::print_splash_screen();
+    print_splash_screen();
 
     if args.cmd.clone().unwrap_or("".to_string()) == "help" {
         utils::display_help(args.name);
