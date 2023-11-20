@@ -61,3 +61,22 @@ pub fn decrypt(key: Key<Aes256Gcm>, nonce: Nonce<Aes256Gcm>, data: Vec<u8>) -> V
 
     cipher.decrypt(nonce, data.as_ref()).unwrap()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{encrypt, decrypt, get_key, get_nonce};
+
+    #[test]
+    fn test_encryption_and_decryption() {
+        let key = get_key();
+        let nonce = get_nonce();
+
+        let data = "Envn is awesome 123!".as_bytes();
+
+        let encrypted_data = encrypt(key, nonce, data);
+
+        let decrypted_data = decrypt(key, nonce, encrypted_data.clone());
+
+        assert_eq!(decrypted_data, data);
+    }
+}

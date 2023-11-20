@@ -70,10 +70,15 @@ pub fn set_password() -> bool {
     write_file(&key_file, hashed)
 }
 
-/// Gets the keys and the nonce and converts them from
-/// the binary format to the Vec<u8> format
-/// which is more convenient to work with
-/// for the encryption and decryption functions
+/// This function returns a tuple containing two vectors: the keys and the nonce.
+/// The keys vector contains a sequence of bytes representing the encryption keys,
+/// while the nonce vector contains a sequence of bytes representing the unique
+/// number used once in encryption algorithms.
+///
+/// # Returns
+///
+/// A tuple `(keys, nonce)` where `keys` is a vector of bytes representing the encryption keys,
+/// and `nonce` is a vector of bytes representing the nonce.
 pub fn get_keys_and_nonce() -> (Vec<u8>, Vec<u8>) {
     let key_path = get_path("key");
     let nonce_path = get_path("nonce");
