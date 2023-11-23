@@ -219,12 +219,12 @@ fn edit_entry(entry: Option<String>) {
     print!("The {$yellow}Editor{/$}");
 
     let key = inquire::Text::new("Secret Name")
-        .with_default(env.key.as_str())
+        .with_initial_value(env.key.as_str())
         .prompt()
         .unwrap();
 
     let value = inquire::Text::new("Secret Value")
-        .with_default(env.value.as_str())
+        .with_initial_value(env.value.as_str())
         .prompt()
         .unwrap();
 
