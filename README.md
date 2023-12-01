@@ -15,19 +15,15 @@ Written in rust, EnvN is quite fast and efficient. It is also designed to be as 
 
 ## Installation
 
+The recommended way to install Envn is to use the cargo package manager.
+I am working on a more portable way to install EnvN.
+Please open an issue if you have any suggestions.
+
 ### Using Cargo
 
 ```bash
 cargo install envn
 ```
-
-### Getting the Binary for your OS
-
-- [Windows](https://github.com/newtoallofthis123/envn/releases/download/v0.1.0/envn.exe)
-
-- [Linux](https://github.com/newtoallofthis123/envn/releases/download/v0.1.0/envn)
-
-Help us by building binaries for other OSes and submitting a PR.
 
 ## Usage
 
@@ -41,13 +37,15 @@ You can later reset this, but you will *lose all your secrets*. So be careful.
 
 ![Main](/assets/main.png)
 
-- `set` - Add a new secret
-- `get` - Get an existing secret
-- `edit` - Edit an existing secret
-- `delete` - Delete an existing secret
-- `show` - List all secrets
-- `load` - Load secrets to a file
-- `from` - Load secrets from a file
+- `get` | `show` - Get a secret
+- `add` - Set a secret
+- `save` - Save the secrets to a file
+- `append` - Append a secret to a file
+- `edit` - Edit a secret
+- `load` - Load secrets from a file
+- `all` - Show all secrets
+- `delete` - Remove a secret
+- `reset` - Reset stuff
 
 For more information, run `envn help`.
 
