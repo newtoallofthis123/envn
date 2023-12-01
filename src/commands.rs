@@ -300,5 +300,58 @@ fn load_file(name: Option<String>) {
 }
 
 fn reset_command(command: Option<String>){
-    bunt::println!("{}", command.unwrap_or("".to_string()));
+    let cmd = match command {
+        Some(cmd) => cmd,
+        None => inquire::Select::new("Select a command to reset", vec!["all", "db", "password"]).prompt().unwrap().to_string(),
+    };
+
+    let auth_file = file::get_path("auth");
+    let key_file = file::get_path("key");
+    let nonce_file = file::get_path("nonce");
+    let db_file = file::get_path("env.db");
+
+    match cmd.as_str(){
+        "all" => {
+            bunt::println!("{$yellow}Warning:{/$} This will {$underline}delete{/$} all your secrets and the password");
+            let confirm = inquire::Confirm::new("Are you sure?")
+                .with_default(false)
+                .prompt()
+                .unwrap();
+            if !confirm {
+                return;
+            }
+            let _ = std::fs::remove_file(auth_file);
+            let _ = std::fs::remove_file(key_file);
+            let _ = std::fs::remove_file(nonce_file);
+            let _ = std::fs::remove_file(db_file);
+            print!("{$green}Reset Complete{/$}");
+        },
+        "db"=> {
+            bunt::println!("{$yellow}Warning:{/$} This will {$underline}delete{/$} all your secrets");
+            let confirm = inquire::Confirm::new("Are you sure?")
+                .with_default(false)
+                .prompt()
+                .unwrap();
+            if !confirm {
+                return;
+            }
+            let _ = std::fs::remove_file(db_file);
+            let _ = std::fs::remove_file(key_file);
+            let _ = std::fs::remove_file(nonce_file);
+            print!("{$green}Reset Complete{/$}");
+        },
+        "password" => {
+            bunt::println!("{$yellow}Warning:{/$} This will {$underline}delete{/$} your password");
+            let confirm = inquire::Confirm::new("Are you sure?")
+                .with_default(false)
+                .prompt()
+                .unwrap();
+            if !confirm {
+                return;
+            }
+            let _ = std::fs::remove_file(auth_file);
+            print!("{$green}Reset Complete{/$}");
+        },
+        _ => bunt::println!("{$red}Command Not Found{/$}"),
+    }
 }
