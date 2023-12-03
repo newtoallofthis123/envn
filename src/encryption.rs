@@ -15,12 +15,20 @@ use aes_gcm::{
     AeadCore, Aes256Gcm, Key, KeyInit,
 };
 
-/// Generating the unique and cryptographically secure key
+/// Generates a key for AES-256-GCM encryption.
+///
+/// # Returns
+///
+/// A `Key` object representing the generated key.
 pub fn get_key() -> Key<Aes256Gcm> {
     Aes256Gcm::generate_key(OsRng)
 }
 
-/// Generating the unique and cryptographically secure nonce
+/// Generates a nonce for AES-256 GCM encryption.
+///
+/// # Returns
+///
+/// A `Nonce` object for AES-256 GCM encryption.
 pub fn get_nonce() -> Nonce<Aes256Gcm> {
     Aes256Gcm::generate_nonce(OsRng)
 }
@@ -43,7 +51,6 @@ pub fn encrypt(key: Key<Aes256Gcm>, nonce: Nonce<Aes256Gcm>, data: &[u8]) -> Vec
     cipher.encrypt(&nonce, data.as_ref()).unwrap()
 }
 
-
 /// Decrypts the given data using the specified key and nonce.
 ///
 /// ## Arguments
@@ -64,7 +71,7 @@ pub fn decrypt(key: Key<Aes256Gcm>, nonce: Nonce<Aes256Gcm>, data: Vec<u8>) -> V
 
 #[cfg(test)]
 mod tests {
-    use super::{encrypt, decrypt, get_key, get_nonce};
+    use super::{decrypt, encrypt, get_key, get_nonce};
 
     #[test]
     fn test_encryption_and_decryption() {

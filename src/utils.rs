@@ -20,33 +20,30 @@ pub struct DisplayEnv {
     pub value: String,
 }
 
+/// Retrieves the password from the environment variables.
+///
+/// # Returns
+///
+/// - `Ok(String)`: The password retrieved from the environment variables.
+/// - `Err(std::env::VarError)`: If there was an error retrieving the password from the environment variables.
 fn get_password_from_env() -> Result<String, std::env::VarError> {
     std::env::var("ENVN_PASSWORD")
 }
 
-/// Checks if the provided password is valid.
+/// Checks the validity of a password.
 ///
-/// # Arguments
-///
-/// * `password` - An optional string representing the password to be checked.
-///
-/// # Returns
-///
-/// A boolean value indicating whether the password is valid or not.
-pub fn check_password(password: Option<String>) -> bool {
-    let password = match password {
-        Some(password) => password,
-        None => match get_password_from_env() {
-            Ok(password) => password,
-            Err(_) => inquire::Password::new("Enter your password 👀")
-                .without_confirmation()
-                .with_display_mode(inquire::PasswordDisplayMode::Masked)
-                .prompt()
-                .unwrap(),
-        },
+/// Returns `true` if the password is valid, `false` otherwise.
+pub fn check_password() -> bool {
+    let password: String = match get_password_from_env() {
+        Ok(password) => password,
+        Err(_) => inquire::Password::new("Enter your password 👀")
+            .without_confirmation()
+            .with_display_mode(inquire::PasswordDisplayMode::Masked)
+            .prompt()
+            .unwrap(),
     };
 
-    let key_file = crate::file::get_path("auth");
+    let key_file = crate::file::join_app_path("auth");
 
     if !file_exists(&key_file) {
         bunt::println!("{$red}No password file found{/$}");
@@ -71,7 +68,7 @@ pub fn check_password(password: Option<String>) -> bool {
 /// Constructs a new `Env` struct with the given `name`, `key`, and `value`.
 /// The `value` is encrypted using the `key` and `nonce` that are stored in the `key` and `nonce` files.
 /// This is essentially, the abstraction for the `Env` struct.
-/// 
+///
 /// # Arguments
 ///
 /// * `name` - The name of the environment variable.
@@ -100,7 +97,7 @@ pub fn construct_struct(name: String, key: String, value: String) -> Env {
 /// Decrypts a given `Entry` and returns a `DisplayEnv` struct.
 /// The `Entry` is decrypted using the `key` and `nonce` that are stored in the `key` and `nonce` files.
 /// This is essentially, the abstraction for the `DisplayEnv` struct.
-/// 
+///
 /// # Arguments
 ///
 /// * `entry` - The `Entry` to be decrypted.
@@ -123,6 +120,20 @@ pub fn decrypt_struct(entry: Entry) -> DisplayEnv {
     }
 }
 
+/// Displays the environment.
+///
+/// # Arguments
+///
+/// * `env` - The `DisplayEnv` struct containing the environment information.
+///
+/// # Example
+///
+/// ```
+/// use envn::utils::display_env;
+///
+/// let env = DisplayEnv { /* initialize the DisplayEnv struct */ };
+/// display_env(env);
+/// ```
 pub fn display_env(env: DisplayEnv) {
     bunt::println!("{$blue}\n-----Secret--------{/$}");
     bunt::println!("{$yellow}Name{/$}: {$green}{}{/$}", env.name);
@@ -130,6 +141,12 @@ pub fn display_env(env: DisplayEnv) {
     bunt::println!("{$yellow}Value{/$}: {$green}{}{/$}", env.value);
 }
 
+/// Displays the help information for a specific command.
+///
+/// # Arguments
+///
+/// * `cmd` - An optional string representing the command for which help information is to be displayed.
+///
 pub fn display_help(cmd: Option<String>) {
     let cmd = cmd.unwrap_or("all".to_string());
     bunt::println!("The Premium Secret Manager\n");

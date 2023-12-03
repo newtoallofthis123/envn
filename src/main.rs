@@ -1,5 +1,5 @@
 use clap::Parser;
-use file::get_path;
+use file::join_app_path;
 
 #[derive(Parser, Debug)]
 #[command(name="evnv", author="Ishan Joshi", version, about="Quickly write env's efficiently", long_about = None)]
@@ -15,9 +15,6 @@ struct Args {
 
     #[arg(required = false)]
     name: Option<String>,
-
-    #[arg(required = false, short, long)]
-    password: Option<String>,
 }
 
 mod commands;
@@ -43,6 +40,8 @@ fn main() {
 
     print_splash_screen();
 
+    let config = file::get_config_file();
+
     if args.cmd.clone().unwrap_or("".to_string()) == "help" {
         utils::display_help(args.name);
         std::process::exit(0);
@@ -51,7 +50,7 @@ fn main() {
     // for ux, we make sure that the password file exists
     // before we do anything else
 
-    if !get_path("auth").exists() {
+    if !join_app_path("auth").exists() {
         bunt::println!("{$red}No password file found{/$}");
         let password_confirm = inquire::Confirm::new("Do you want to create a password file?")
             .with_default(true)
@@ -68,7 +67,7 @@ fn main() {
 
     // Small piece of code that checks if the user
     // has entered the correct password
-    if !utils::check_password(args.password) {
+    if config.ask_for_password && !utils::check_password() {
         bunt::println!("{$red}Error with Password:({/$}");
         std::process::exit(1);
     }
@@ -76,7 +75,7 @@ fn main() {
     let mut cmd = args.cmd;
 
     let accepted = vec![
-        "add", "show", "save", "all", "load", "get", "edit", "delete", "reset"
+        "add", "show", "save", "all", "load", "get", "edit", "delete", "reset",
     ];
 
     if cmd.is_none() {
