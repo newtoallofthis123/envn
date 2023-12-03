@@ -20,6 +20,12 @@ pub struct DisplayEnv {
     pub value: String,
 }
 
+/// Retrieves the password from the environment variables.
+///
+/// # Returns
+///
+/// - `Ok(String)`: The password retrieved from the environment variables.
+/// - `Err(std::env::VarError)`: If there was an error retrieving the password from the environment variables.
 fn get_password_from_env() -> Result<String, std::env::VarError> {
     std::env::var("ENVN_PASSWORD")
 }
