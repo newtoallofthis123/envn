@@ -120,6 +120,20 @@ pub fn decrypt_struct(entry: Entry) -> DisplayEnv {
     }
 }
 
+/// Displays the environment.
+///
+/// # Arguments
+///
+/// * `env` - The `DisplayEnv` struct containing the environment information.
+///
+/// # Example
+///
+/// ```
+/// use envn::utils::display_env;
+///
+/// let env = DisplayEnv { /* initialize the DisplayEnv struct */ };
+/// display_env(env);
+/// ```
 pub fn display_env(env: DisplayEnv) {
     bunt::println!("{$blue}\n-----Secret--------{/$}");
     bunt::println!("{$yellow}Name{/$}: {$green}{}{/$}", env.name);
@@ -127,6 +141,12 @@ pub fn display_env(env: DisplayEnv) {
     bunt::println!("{$yellow}Value{/$}: {$green}{}{/$}", env.value);
 }
 
+/// Displays the help information for a specific command.
+///
+/// # Arguments
+///
+/// * `cmd` - An optional string representing the command for which help information is to be displayed.
+///
 pub fn display_help(cmd: Option<String>) {
     let cmd = cmd.unwrap_or("all".to_string());
     bunt::println!("The Premium Secret Manager\n");

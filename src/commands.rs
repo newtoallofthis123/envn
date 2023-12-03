@@ -3,12 +3,11 @@
 /// nor exported to the main file
 /// Any new command should be added to this file as well
 /// as the handler function
-
 use std::{io::Write, path::Path};
 
 use crate::{
     file::{self, file_exists},
-    utils::{DisplayEnv, display_env},
+    utils::{display_env, DisplayEnv},
 };
 use bunt::println as print;
 
@@ -37,7 +36,7 @@ fn add_command(name: Option<String>) {
         Some(name) => {
             bunt::println!("{$yellow}Name{/$}: {$green}{}{/$}", name);
             name
-        },
+        }
         None => inquire::Text::new("The identifier for this secret")
             .prompt()
             .unwrap(),
@@ -131,7 +130,10 @@ fn save_command(filename: Option<String>) {
 
     let filename = match filename {
         Some(filename) => filename,
-        None => inquire::Text::new("File Name").with_default(".env").prompt().unwrap(),
+        None => inquire::Text::new("File Name")
+            .with_default(".env")
+            .prompt()
+            .unwrap(),
     };
 
     let file = std::fs::File::create(filename).unwrap();
@@ -250,7 +252,6 @@ fn delete_entry(name: Option<String>) {
         return;
     }
 
-    
     let confirmation = inquire::Confirm::new("Delete from file as well?")
         .with_default(true)
         .prompt()
@@ -258,11 +259,10 @@ fn delete_entry(name: Option<String>) {
 
     if confirmation {
         crate::db::delete_entry_by_name(&name);
-    print!("{$green}Secret Deleted{/$}");
-    } else{
+        print!("{$green}Secret Deleted{/$}");
+    } else {
         print!("{$red}Aborted{/$}");
     }
-
 }
 
 fn load_file(name: Option<String>) {
@@ -299,10 +299,13 @@ fn load_file(name: Option<String>) {
     print!("{$green}Secrets Saved{/$}");
 }
 
-fn reset_command(command: Option<String>){
+fn reset_command(command: Option<String>) {
     let cmd = match command {
         Some(cmd) => cmd,
-        None => inquire::Select::new("Select a command to reset", vec!["all", "db", "password"]).prompt().unwrap().to_string(),
+        None => inquire::Select::new("Select a command to reset", vec!["all", "db", "password"])
+            .prompt()
+            .unwrap()
+            .to_string(),
     };
 
     let auth_file = file::join_app_path("auth");
@@ -310,7 +313,7 @@ fn reset_command(command: Option<String>){
     let nonce_file = file::join_app_path("nonce");
     let db_file = file::join_app_path("env.db");
 
-    match cmd.as_str(){
+    match cmd.as_str() {
         "all" => {
             bunt::println!("{$yellow}Warning:{/$} This will {$underline}delete{/$} all your secrets and the password");
             let confirm = inquire::Confirm::new("Are you sure?")
@@ -325,9 +328,11 @@ fn reset_command(command: Option<String>){
             let _ = std::fs::remove_file(nonce_file);
             let _ = std::fs::remove_file(db_file);
             print!("{$green}Reset Complete{/$}");
-        },
-        "db"=> {
-            bunt::println!("{$yellow}Warning:{/$} This will {$underline}delete{/$} all your secrets");
+        }
+        "db" => {
+            bunt::println!(
+                "{$yellow}Warning:{/$} This will {$underline}delete{/$} all your secrets"
+            );
             let confirm = inquire::Confirm::new("Are you sure?")
                 .with_default(false)
                 .prompt()
@@ -339,7 +344,7 @@ fn reset_command(command: Option<String>){
             let _ = std::fs::remove_file(key_file);
             let _ = std::fs::remove_file(nonce_file);
             print!("{$green}Reset Complete{/$}");
-        },
+        }
         "password" => {
             bunt::println!("{$yellow}Warning:{/$} This will {$underline}delete{/$} your password");
             let confirm = inquire::Confirm::new("Are you sure?")
@@ -351,7 +356,7 @@ fn reset_command(command: Option<String>){
             }
             let _ = std::fs::remove_file(auth_file);
             print!("{$green}Reset Complete{/$}");
-        },
+        }
         _ => bunt::println!("{$red}Command Not Found{/$}"),
     }
 }

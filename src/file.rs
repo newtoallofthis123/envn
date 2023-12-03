@@ -15,9 +15,8 @@ use crate::utils::{construct_struct, Env};
 /// let home_path = get_home_path();
 /// println!("Home path: {}", home_path);
 /// ```
-pub fn get_home_path() -> PathBuf{
-    dirs::home_dir()
-        .expect("Failed to get home directory")
+pub fn get_home_path() -> PathBuf {
+    dirs::home_dir().expect("Failed to get home directory")
 }
 
 /// Returns the path to the application directory.
@@ -39,19 +38,23 @@ pub fn get_app_dir_path() -> PathBuf {
 }
 /// Represents the configuration file
 #[derive(serde::Deserialize, Debug)]
-pub struct Config{
+pub struct Config {
     pub base_dir: String,
     pub ask_for_password: bool,
 }
 
 /// Returns the default config
-fn default_config()->String{
-    format!("base_dir = \"{}\"\nask_for_password = true", Path::new(&get_home_path()).join(".envn").to_str().unwrap())
+fn default_config() -> String {
+    format!(
+        "base_dir = \"{}\"\nask_for_password = true",
+        Path::new(&get_home_path()).join(".envn").to_str().unwrap()
+    )
 }
 
 /// Convert config from string to Config struct
-fn convert_config(config: String)->Config{
-    let config: Config = toml::from_str(config.as_str()).unwrap_or(toml::from_str(&default_config()).unwrap());
+fn convert_config(config: String) -> Config {
+    let config: Config =
+        toml::from_str(config.as_str()).unwrap_or(toml::from_str(&default_config()).unwrap());
     config
 }
 
@@ -72,14 +75,16 @@ pub fn write_file(path: &Path, content: String) -> bool {
 /// # Returns
 ///
 /// The `Config` struct representing the configuration file.
-pub fn get_config_file()->Config{
-    let config_path = dirs::config_local_dir().expect("Unable to get local config path").join("envn");
-    if !&config_path.exists(){
+pub fn get_config_file() -> Config {
+    let config_path = dirs::config_local_dir()
+        .expect("Unable to get local config path")
+        .join("envn");
+    if !&config_path.exists() {
         std::fs::create_dir_all(&config_path).expect("Failed to create config directory");
     }
 
     let config_file = config_path.join("config.toml");
-    if !&config_file.exists(){
+    if !&config_file.exists() {
         let _ = std::fs::write(&config_file, default_config());
     }
 
@@ -97,13 +102,13 @@ pub fn join_app_path(joiner: &str) -> PathBuf {
 /// This password is used for the encryption and decryption of the database
 /// Also, a hashed version of the password is stored in the auth file
 /// The auth algorithm is bcrypt
-/// Which is a hashing algorithm that is used to hash passwords and used to 
+/// Which is a hashing algorithm that is used to hash passwords and used to
 /// verify the password when the user tries to access the database
 /// # Returns
-/// 
+///
 /// * `true` - If the password was set successfully
 /// * `false` - If the password was not set successfully
-/// 
+///
 /// # Panics
 /// * If the password could not be hashed
 /// * If the password could not be written to the file
@@ -119,7 +124,7 @@ pub fn set_password() -> bool {
 
     bunt::println!("{$green}Password Set{/$}");
     bunt::println!("Restart the program to use the password");
-        
+
     write_file(&key_file, hashed)
 }
 

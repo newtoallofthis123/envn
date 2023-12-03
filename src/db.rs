@@ -1,7 +1,6 @@
 /// This file is responsible for all the database operations
 /// The database used is SQLite
 /// Handles the basic CRUD operations
-
 use rusqlite::{params, Connection};
 
 use crate::{
@@ -17,9 +16,9 @@ pub struct Entry {
 }
 
 /// Connects to the database.
-/// 
+///
 /// # Returns
-/// 
+///
 /// Returns a `Connection` object representing the connection to the database.
 fn connect_to_db() -> Connection {
     Connection::open(join_app_path("env.db")).expect("Failed to connect to db")
