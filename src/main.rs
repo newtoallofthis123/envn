@@ -1,5 +1,5 @@
 use clap::Parser;
-use file::get_path;
+use file::join_app_path;
 
 #[derive(Parser, Debug)]
 #[command(name="evnv", author="Ishan Joshi", version, about="Quickly write env's efficiently", long_about = None)]
@@ -50,7 +50,7 @@ fn main() {
     // for ux, we make sure that the password file exists
     // before we do anything else
 
-    if !get_path("auth").exists() {
+    if !join_app_path("auth").exists() {
         bunt::println!("{$red}No password file found{/$}");
         let password_confirm = inquire::Confirm::new("Do you want to create a password file?")
             .with_default(true)

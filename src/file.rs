@@ -5,57 +5,38 @@ use std::{
 
 use crate::utils::{construct_struct, Env};
 
-/// Retrieves the home path based on the current operating system.
-/// 
-/// # Returns
-/// 
-/// The home path as an `OsString` if successful.
-/// 
-/// # Panics
-/// 
-/// This function will panic if the current operating system is not supported or if it fails to retrieve the home directory.
-pub fn get_home_path() -> String {
-    let platform = match std::env::consts::OS {
-        "windows" => "USERPROFILE",
-        "linux" => "HOME",
-        "macos" => "HOME",
-        _ => {
-            println!("{}", std::env::consts::OS);
-            panic!("Unsupported platform")
-        }
-    };
-
-    std::env::var(platform).expect("Failed to get home directory")
-}
-
-pub fn get_operating_system() -> String {
-    std::env::consts::OS.to_string()
-}
-
-pub fn get_environment_variable(name: &str) -> Option<String> {
-    std::env::var(name).ok()
+/// Returns the home path.
+///
+/// # Example
+///
+/// ```
+/// use envn::file::get_home_path;
+///
+/// let home_path = get_home_path();
+/// println!("Home path: {}", home_path);
+/// ```
+pub fn get_home_path() -> PathBuf{
+    dirs::home_dir()
+        .expect("Failed to get home directory")
 }
 
 /// Returns the path to the application directory.
-/// This can be defined by default in the config file.
-/// 
+///
 /// # Returns
 ///
 /// The path to the application directory as a `PathBuf` object.
 pub fn get_app_dir_path() -> PathBuf {
-
     let config = get_config_file();
-    let base_dir = get_environment_variable(config.base_dir.as_str()).unwrap_or(get_home_path().to_string());
+    let base_dir = config.base_dir.as_str();
 
-    let path = Path::new(&base_dir).join(".envn");
+    let path = Path::new(base_dir);
 
-    if !&path.exists() {
-        let _ = std::fs::create_dir::<_>(&path);
+    if !path.exists() {
+        std::fs::create_dir_all(path).expect("Failed to create App directory");
     }
 
-    path
+    path.to_path_buf()
 }
-
 /// Represents the configuration file
 #[derive(serde::Deserialize, Debug)]
 pub struct Config{
@@ -65,18 +46,7 @@ pub struct Config{
 
 /// Returns the default config
 fn default_config()->String{
-    match get_operating_system().as_str() {
-        "windows" => {
-            "base_dir = 'USERPROFILE'\nask_for_password = true".to_string()
-        }
-        "linux" | "macos" => {
-            "base_dir = 'HOME'\nask_for_password = true".to_string()
-        }
-        _ => {
-            println!("{}", std::env::consts::OS);
-            panic!("Unsupported platform")
-        }
-    }
+    format!("base_dir = \"{}\"\nask_for_password = true", Path::new(&get_home_path()).join(".envn").to_str().unwrap())
 }
 
 /// Convert config from string to Config struct
@@ -103,12 +73,9 @@ pub fn write_file(path: &Path, content: String) -> bool {
 ///
 /// The `Config` struct representing the configuration file.
 pub fn get_config_file()->Config{
-    let home_path = get_home_path();
-
-    // Check if the config file exists, if not create it
-    let config_path = Path::new(&home_path).join(".config").join("envn");
+    let config_path = dirs::config_local_dir().expect("Unable to get local config path").join("envn");
     if !&config_path.exists(){
-        let _ = std::fs::create_dir::<_>(&config_path);
+        std::fs::create_dir_all(&config_path).expect("Failed to create config directory");
     }
 
     let config_file = config_path.join("config.toml");
@@ -116,12 +83,12 @@ pub fn get_config_file()->Config{
         let _ = std::fs::write(&config_file, default_config());
     }
 
-    let config = std::fs::read_to_string(config_path.join("config.toml")).expect("Failed to read config file");
+    let config = std::fs::read_to_string(config_file).expect("Failed to read config file");
     convert_config(config)
 }
 
 /// Join any path to the config path
-pub fn get_path(joiner: &str) -> PathBuf {
+pub fn join_app_path(joiner: &str) -> PathBuf {
     let path = crate::file::get_app_dir_path();
     path.join(joiner).clone()
 }
@@ -145,7 +112,7 @@ pub fn set_password() -> bool {
         .with_display_mode(inquire::PasswordDisplayMode::Masked)
         .prompt()
         .expect("Failed to get password");
-    let key_file = get_path("auth");
+    let key_file = join_app_path("auth");
 
     // hash the password
     let hashed = bcrypt::hash(password, bcrypt::DEFAULT_COST).expect("Failed to hash password");
@@ -166,8 +133,8 @@ pub fn set_password() -> bool {
 /// A tuple `(keys, nonce)` where `keys` is a vector of bytes representing the encryption keys,
 /// and `nonce` is a vector of bytes representing the nonce.
 pub fn get_keys_and_nonce() -> (Vec<u8>, Vec<u8>) {
-    let key_path = get_path("key");
-    let nonce_path = get_path("nonce");
+    let key_path = join_app_path("key");
+    let nonce_path = join_app_path("nonce");
 
     if !file_exists(&key_path) || !file_exists(&nonce_path) {
         let key = crate::encryption::get_key();

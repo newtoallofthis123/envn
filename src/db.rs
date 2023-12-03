@@ -5,7 +5,7 @@
 use rusqlite::{params, Connection};
 
 use crate::{
-    file::get_path,
+    file::join_app_path,
     utils::{DisplayEnv, Env},
 };
 
@@ -17,7 +17,7 @@ pub struct Entry {
 }
 
 fn connect_to_db() -> Connection {
-    Connection::open(get_path("env.db")).expect("Failed to connect to db")
+    Connection::open(join_app_path("env.db")).expect("Failed to connect to db")
 }
 
 // breaking function

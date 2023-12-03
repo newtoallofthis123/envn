@@ -43,7 +43,7 @@ pub fn check_password() -> bool {
             .unwrap(),
     };
 
-    let key_file = crate::file::get_path("auth");
+    let key_file = crate::file::join_app_path("auth");
 
     if !file_exists(&key_file) {
         bunt::println!("{$red}No password file found{/$}");

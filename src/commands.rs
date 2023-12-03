@@ -305,10 +305,10 @@ fn reset_command(command: Option<String>){
         None => inquire::Select::new("Select a command to reset", vec!["all", "db", "password"]).prompt().unwrap().to_string(),
     };
 
-    let auth_file = file::get_path("auth");
-    let key_file = file::get_path("key");
-    let nonce_file = file::get_path("nonce");
-    let db_file = file::get_path("env.db");
+    let auth_file = file::join_app_path("auth");
+    let key_file = file::join_app_path("key");
+    let nonce_file = file::join_app_path("nonce");
+    let db_file = file::join_app_path("env.db");
 
     match cmd.as_str(){
         "all" => {
