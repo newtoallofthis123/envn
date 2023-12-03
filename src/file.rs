@@ -5,11 +5,11 @@ use std::{
 
 use crate::utils::{construct_struct, Env};
 
-/// Matches the respectively config path for the operating system and
-/// creates a config directory with the name ".envn" if it does not exist.
+/// Matches the respectively app dir path for the operating system and
+/// creates a app dir directory with the name ".envn" if it does not exist.
 /// This directory is used to store the key, nonce, and auth files.
 /// The main sqlite database is stored in the same directory
-pub fn get_config_path() -> PathBuf {
+pub fn get_app_dir_path() -> PathBuf {
     let platform = match std::env::consts::OS {
         "windows" => "USERPROFILE",
         "linux" => "HOME",
@@ -44,7 +44,7 @@ pub fn write_file(path: &Path, content: String) -> bool {
 
 /// Join any path to the config path
 pub fn get_path(joiner: &str) -> PathBuf {
-    let path = crate::file::get_config_path();
+    let path = crate::file::get_app_dir_path();
     path.join(joiner).clone()
 }
 
