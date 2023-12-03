@@ -16,11 +16,18 @@ pub struct Entry {
     pub value: Vec<u8>,
 }
 
+/// Connects to the database.
+/// 
+/// # Returns
+/// 
+/// Returns a `Connection` object representing the connection to the database.
 fn connect_to_db() -> Connection {
     Connection::open(join_app_path("env.db")).expect("Failed to connect to db")
 }
 
-// breaking function
+/// Prepares the database for usage.
+///
+/// This function initializes the necessary resources and configurations for the database.
 pub fn prepare_db() {
     let conn = connect_to_db();
     conn.execute(
@@ -35,6 +42,15 @@ pub fn prepare_db() {
     .expect("Failed to create table");
 }
 
+/// Inserts an environment variable into the database.
+///
+/// # Arguments
+///
+/// * `env` - The environment variable to be inserted.
+///
+/// # Returns
+///
+/// Returns `true` if the insertion is successful, `false` otherwise.
 pub fn insert_env(env: Env) -> bool {
     let conn = connect_to_db();
     let mut stmt = conn
@@ -46,6 +62,15 @@ pub fn insert_env(env: Env) -> bool {
     true
 }
 
+/// Retrieves an entry from the database by its name.
+///
+/// # Arguments
+///
+/// * `name` - The name of the entry to retrieve.
+///
+/// # Returns
+///
+/// An `Option<Entry>` representing the retrieved entry, or `None` if no entry with the given name exists.
 pub fn get_by_name(name: &str) -> Option<Entry> {
     let conn = connect_to_db();
     let mut stmt = conn
@@ -69,6 +94,15 @@ pub fn get_by_name(name: &str) -> Option<Entry> {
     })
 }
 
+/// Checks if a record with the given name exists in the database.
+///
+/// # Arguments
+///
+/// * `name` - The name of the record to check.
+///
+/// # Returns
+///
+/// Returns `true` if a record with the given name exists in the database, otherwise `false`.
 pub fn does_exist(name: &str) -> bool {
     let conn = connect_to_db();
     let mut stmt = conn
@@ -88,6 +122,11 @@ pub fn delete_entry_by_name(name: &str) -> bool {
     true
 }
 
+/// Retrieves all names from the database.
+///
+/// # Returns
+///
+/// A vector of `DisplayEnv` structs representing the names.
 pub fn get_all_names() -> Vec<DisplayEnv> {
     let conn = connect_to_db();
     let mut stmt = conn
