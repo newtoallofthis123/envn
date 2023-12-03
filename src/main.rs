@@ -15,9 +15,6 @@ struct Args {
 
     #[arg(required = false)]
     name: Option<String>,
-
-    #[arg(required = false, short, long)]
-    password: Option<String>,
 }
 
 mod commands;
@@ -43,7 +40,7 @@ fn main() {
 
     print_splash_screen();
 
-    println!("{:?}", file::get_config_file());
+    let config = file::get_config_file();
 
     if args.cmd.clone().unwrap_or("".to_string()) == "help" {
         utils::display_help(args.name);
@@ -70,7 +67,7 @@ fn main() {
 
     // Small piece of code that checks if the user
     // has entered the correct password
-    if !utils::check_password(args.password) {
+    if config.ask_for_password && !utils::check_password() {
         bunt::println!("{$red}Error with Password:({/$}");
         std::process::exit(1);
     }
@@ -78,7 +75,7 @@ fn main() {
     let mut cmd = args.cmd;
 
     let accepted = vec![
-        "add", "show", "save", "all", "load", "get", "edit", "delete", "reset"
+        "add", "show", "save", "all", "load", "get", "edit", "delete", "reset",
     ];
 
     if cmd.is_none() {

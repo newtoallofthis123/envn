@@ -30,26 +30,17 @@ fn get_password_from_env() -> Result<String, std::env::VarError> {
     std::env::var("ENVN_PASSWORD")
 }
 
-/// Checks if the provided password is valid.
+/// Checks the validity of a password.
 ///
-/// # Arguments
-///
-/// * `password` - An optional string representing the password to be checked.
-///
-/// # Returns
-///
-/// A boolean value indicating whether the password is valid or not.
-pub fn check_password(password: Option<String>) -> bool {
-    let password = match password {
-        Some(password) => password,
-        None => match get_password_from_env() {
-            Ok(password) => password,
-            Err(_) => inquire::Password::new("Enter your password 👀")
-                .without_confirmation()
-                .with_display_mode(inquire::PasswordDisplayMode::Masked)
-                .prompt()
-                .unwrap(),
-        },
+/// Returns `true` if the password is valid, `false` otherwise.
+pub fn check_password() -> bool {
+    let password: String = match get_password_from_env() {
+        Ok(password) => password,
+        Err(_) => inquire::Password::new("Enter your password 👀")
+            .without_confirmation()
+            .with_display_mode(inquire::PasswordDisplayMode::Masked)
+            .prompt()
+            .unwrap(),
     };
 
     let key_file = crate::file::get_path("auth");
@@ -77,7 +68,7 @@ pub fn check_password(password: Option<String>) -> bool {
 /// Constructs a new `Env` struct with the given `name`, `key`, and `value`.
 /// The `value` is encrypted using the `key` and `nonce` that are stored in the `key` and `nonce` files.
 /// This is essentially, the abstraction for the `Env` struct.
-/// 
+///
 /// # Arguments
 ///
 /// * `name` - The name of the environment variable.
@@ -106,7 +97,7 @@ pub fn construct_struct(name: String, key: String, value: String) -> Env {
 /// Decrypts a given `Entry` and returns a `DisplayEnv` struct.
 /// The `Entry` is decrypted using the `key` and `nonce` that are stored in the `key` and `nonce` files.
 /// This is essentially, the abstraction for the `DisplayEnv` struct.
-/// 
+///
 /// # Arguments
 ///
 /// * `entry` - The `Entry` to be decrypted.
