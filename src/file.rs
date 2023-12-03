@@ -1,6 +1,6 @@
 use std::{
     io::BufRead,
-    path::{Path, PathBuf}, ffi::OsString,
+    path::{Path, PathBuf},
 };
 
 use crate::utils::{construct_struct, Env};
@@ -14,7 +14,7 @@ use crate::utils::{construct_struct, Env};
 /// # Panics
 /// 
 /// This function will panic if the current operating system is not supported or if it fails to retrieve the home directory.
-pub fn get_home_path() -> OsString {
+pub fn get_home_path() -> String {
     let platform = match std::env::consts::OS {
         "windows" => "USERPROFILE",
         "linux" => "HOME",
@@ -25,7 +25,15 @@ pub fn get_home_path() -> OsString {
         }
     };
 
-    std::env::var_os(platform).expect("Failed to get home directory")
+    std::env::var(platform).expect("Failed to get home directory")
+}
+
+pub fn get_operating_system() -> String {
+    std::env::consts::OS.to_string()
+}
+
+pub fn get_environment_variable(name: &str) -> Option<String> {
+    std::env::var(name).ok()
 }
 
 /// Returns the path to the application directory.
@@ -36,8 +44,10 @@ pub fn get_home_path() -> OsString {
 /// The path to the application directory as a `PathBuf` object.
 pub fn get_app_dir_path() -> PathBuf {
 
-    let home_path = get_home_path();
-    let path = Path::new(&home_path).join(".envn");
+    let config = get_config_file();
+    let base_dir = get_environment_variable(config.base_dir.as_str()).unwrap_or(get_home_path().to_string());
+
+    let path = Path::new(&base_dir).join(".envn");
 
     if !&path.exists() {
         let _ = std::fs::create_dir::<_>(&path);
@@ -55,7 +65,18 @@ pub struct Config{
 
 /// Returns the default config
 fn default_config()->String{
-    "base_dir = '~/.envn'\nask_for_password = true".to_string()
+    match get_operating_system().as_str() {
+        "windows" => {
+            "base_dir = 'USERPROFILE'\nask_for_password = true".to_string()
+        }
+        "linux" | "macos" => {
+            "base_dir = 'HOME'\nask_for_password = true".to_string()
+        }
+        _ => {
+            println!("{}", std::env::consts::OS);
+            panic!("Unsupported platform")
+        }
+    }
 }
 
 /// Convert config from string to Config struct
