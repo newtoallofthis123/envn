@@ -15,12 +15,20 @@ use aes_gcm::{
     AeadCore, Aes256Gcm, Key, KeyInit,
 };
 
-/// Generating the unique and cryptographically secure key
+/// Generates a key for AES-256-GCM encryption.
+/// 
+/// # Returns
+/// 
+/// A `Key` object representing the generated key.
 pub fn get_key() -> Key<Aes256Gcm> {
     Aes256Gcm::generate_key(OsRng)
 }
 
-/// Generating the unique and cryptographically secure nonce
+/// Generates a nonce for AES-256 GCM encryption.
+///
+/// # Returns
+///
+/// A `Nonce` object for AES-256 GCM encryption.
 pub fn get_nonce() -> Nonce<Aes256Gcm> {
     Aes256Gcm::generate_nonce(OsRng)
 }

@@ -43,6 +43,8 @@ fn main() {
 
     print_splash_screen();
 
+    println!("{:?}", file::get_config_file());
+
     if args.cmd.clone().unwrap_or("".to_string()) == "help" {
         utils::display_help(args.name);
         std::process::exit(0);
