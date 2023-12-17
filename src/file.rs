@@ -94,7 +94,7 @@ pub fn get_config_file() -> Config {
 
 /// Join any path to the config path
 pub fn join_app_path(joiner: &str) -> PathBuf {
-    let path = crate::file::get_app_dir_path();
+    let path = get_app_dir_path();
     path.join(joiner).clone()
 }
 

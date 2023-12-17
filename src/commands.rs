@@ -6,11 +6,12 @@
 use std::{io::Write, path::Path};
 
 use crate::{
-    file::{self, file_exists},
-    utils::{display_env, DisplayEnv},
+    file::{self, file_exists, load_file_to_insert_in_db},
+    utils::{display_env, DisplayEnv, construct_struct, decrypt_struct}, db::{get_by_name, get_all_names, does_exist, delete_entry_by_name, insert_env},
 };
 use bunt::println as print;
 
+/// Handles the command passed in by the user
 pub fn handle_command(cmd: &str, name: Option<String>) {
     match cmd {
         "get" => get_command(name),
@@ -29,9 +30,11 @@ pub fn handle_command(cmd: &str, name: Option<String>) {
     }
 }
 
+/// The Add command
 fn add_command(name: Option<String>) {
     print!("The {$yellow}Setter{/$}");
 
+    //if name is not provided, ask for it
     let name = match name {
         Some(name) => {
             bunt::println!("{$yellow}Name{/$}: {$green}{}{/$}", name);
@@ -44,7 +47,8 @@ fn add_command(name: Option<String>) {
     let key = inquire::Text::new("Enter the Key").prompt().unwrap();
     let value = inquire::Text::new("Enter the Value").prompt().unwrap();
 
-    let env_entry = crate::utils::construct_struct(name, key, value);
+    // create a struct to store the data
+    let env_entry = construct_struct(name, key, value);
 
     if crate::db::insert_env(env_entry) {
         print!("{$green}Secret Saved{/$}");
@@ -66,11 +70,11 @@ fn get_command(name: Option<String>) {
         return;
     }
 
-    let env_entry = crate::db::get_by_name(&name);
+    let env_entry = get_by_name(&name);
 
     let env_entry = env_entry.unwrap();
 
-    let env = crate::utils::decrypt_struct(env_entry);
+    let env = decrypt_struct(env_entry);
 
     crate::utils::display_env(env);
 }
@@ -88,7 +92,7 @@ fn save_command(filename: Option<String>) {
         return;
     }
 
-    let envs = crate::db::get_all_names();
+    let envs = get_all_names();
     let mut env_names = envs
         .iter()
         .map(|env| env.name.clone())
@@ -114,8 +118,8 @@ fn save_command(filename: Option<String>) {
             continue;
         }
 
-        let env = crate::db::get_by_name(&to_add).unwrap();
-        let final_env = crate::utils::decrypt_struct(env);
+        let env = get_by_name(&to_add).unwrap();
+        let final_env = decrypt_struct(env);
         envs_to_write.push(final_env);
 
         print!("{$yellow}Secret Added{/$}");
@@ -150,7 +154,7 @@ fn save_command(filename: Option<String>) {
 
 fn all_command(range: Option<String>) {
     print!("The {$yellow}Show{/$}");
-    let envs = crate::db::get_all_names();
+    let envs = get_all_names();
 
     if envs.is_empty() {
         print!("{$red}No Secrets Found{/$}");
@@ -178,14 +182,14 @@ fn append_env(name: Option<String>) {
         None => inquire::Text::new("Secret Name").prompt().unwrap(),
     };
 
-    if !crate::db::does_exist(&name) {
+    if !does_exist(&name) {
         print!("{$red}Secret Not Found{/$}");
         return;
     }
 
-    let env_entry = crate::db::get_by_name(&name).unwrap();
+    let env_entry = get_by_name(&name).unwrap();
 
-    let env = crate::utils::decrypt_struct(env_entry);
+    let env = decrypt_struct(env_entry);
 
     if !file_exists(Path::new(".env")) {
         let _ = std::fs::File::create(".env");
@@ -209,14 +213,14 @@ fn edit_entry(entry: Option<String>) {
         None => inquire::Text::new("Secret Name").prompt().unwrap(),
     };
 
-    if !crate::db::does_exist(&entry) {
+    if !does_exist(&entry) {
         print!("{$red}Secret Not Found{/$}");
         return;
     }
 
-    let env_entry = crate::db::get_by_name(&entry).unwrap();
+    let env_entry = get_by_name(&entry).unwrap();
 
-    let env = crate::utils::decrypt_struct(env_entry);
+    let env = decrypt_struct(env_entry);
 
     print!("The {$yellow}Editor{/$}");
 
@@ -230,13 +234,13 @@ fn edit_entry(entry: Option<String>) {
         .prompt()
         .unwrap();
 
-    let new_env = crate::utils::construct_struct(entry.clone(), key, value);
+    let new_env = construct_struct(entry.clone(), key, value);
 
     //delete old entry
-    crate::db::delete_entry_by_name(&entry);
+    delete_entry_by_name(&entry);
 
     //insert new entry
-    crate::db::insert_env(new_env);
+    insert_env(new_env);
 
     print!("{$green}Secret Edited{/$}");
 }
@@ -247,7 +251,7 @@ fn delete_entry(name: Option<String>) {
         None => inquire::Text::new("Secret Name").prompt().unwrap(),
     };
 
-    if !crate::db::does_exist(&name) {
+    if !does_exist(&name) {
         print!("{$red}Secret Not Found{/$}");
         return;
     }
@@ -258,7 +262,7 @@ fn delete_entry(name: Option<String>) {
         .unwrap();
 
     if confirmation {
-        crate::db::delete_entry_by_name(&name);
+        delete_entry_by_name(&name);
         print!("{$green}Secret Deleted{/$}");
     } else {
         print!("{$red}Aborted{/$}");
@@ -285,15 +289,15 @@ fn load_file(name: Option<String>) {
         }
     }
 
-    let envs = crate::file::load_file_to_insert_in_db(Path::new(&name));
+    let envs = load_file_to_insert_in_db(Path::new(&name));
     print!("Loaded {$yellow}{}{/$} secrets to memory", envs.len());
 
     for env in envs {
-        if crate::db::does_exist(&env.name) {
+        if does_exist(&env.name) {
             print!("{$red}Secret Already Exists{/$}, use edit instead");
             continue;
         }
-        crate::db::insert_env(env);
+        insert_env(env);
     }
 
     print!("{$green}Secrets Saved{/$}");

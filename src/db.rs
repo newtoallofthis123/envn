@@ -5,7 +5,7 @@ use rusqlite::{params, Connection};
 
 use crate::{
     file::join_app_path,
-    utils::{DisplayEnv, Env},
+    utils::{DisplayEnv, Env, decrypt_struct},
 };
 
 pub struct Entry {
@@ -147,7 +147,7 @@ pub fn get_all_names() -> Vec<DisplayEnv> {
             value,
         };
 
-        let env = crate::utils::decrypt_struct(env);
+        let env = decrypt_struct(env);
 
         envs.push(env);
     }
