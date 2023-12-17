@@ -1,4 +1,5 @@
 use clap::Parser;
+use correct_word::{correct_word, Algorithm::Levenshtein};
 use file::join_app_path;
 
 #[derive(Parser, Debug)]
@@ -87,11 +88,25 @@ fn main() {
         );
     }
 
+    // If the user enters an invalid command, we try to
+    // predict the correct command
+    // We do this by using the Levenshtein algorithm with a threshold of 1
+    // This threshold ensures that we only predict the correct command and not something
+    // that is completely different
     if !accepted.contains(&cmd.clone().unwrap().as_str()) {
-        bunt::println!(
-            "Sorry, the command {} doesn't exist/is'nt implemented",
-            cmd.clone().unwrap()
-        );
+        let predicted = correct_word(Levenshtein, &cmd.clone().unwrap(), accepted, Some(1));
+        if let Some(word) = predicted.word {
+            cmd = Some(
+                inquire::Text::new(&format!("Did you mean {}?", word))
+                    .with_default(&word)
+                    .prompt()
+                    .unwrap(),
+            );
+            bunt::println!("{$yellow}Using {} instead{/$}", cmd.clone().unwrap());
+        } else {
+            bunt::println!("{$red}Invalid command{/$}");
+            std::process::exit(1);
+        }
     }
     db::prepare_db();
     commands::handle_command(&cmd.unwrap(), args.name);
