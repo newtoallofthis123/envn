@@ -249,6 +249,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "acbf1af155f9b9ef647e42cdc158db4b64a1b61f743629225fde6f3e0be2a7c7"
 
 [[package]]
+name = "correct_word"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1cf7447ef8be29997688f4c09419a50dbd35f693da27894975e103e858d9c3de"
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -338,6 +344,7 @@ dependencies = [
  "bincode",
  "bunt",
  "clap",
+ "correct_word",
  "dirs",
  "inquire",
  "rand",
