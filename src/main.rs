@@ -69,14 +69,15 @@ fn main() {
     // Small piece of code that checks if the user
     // has entered the correct password
     if config.ask_for_password && !utils::check_password() {
-        bunt::println!("{$red}Error with Password:({/$}");
+        bunt::println!("{$red}Error with Password:{/$}");
         std::process::exit(1);
     }
 
     let mut cmd = args.cmd;
 
     let accepted = vec![
-        "add", "show", "save", "all", "load", "get", "edit", "delete", "reset",
+        "add", "show", "save", "append", "all", "load", "get", "edit", "delete", "backup",
+        "restore", "reset",
     ];
 
     if cmd.is_none() {

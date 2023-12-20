@@ -1,7 +1,10 @@
 use std::{
+    fs::File,
     io::BufRead,
     path::{Path, PathBuf},
 };
+
+use tar::Builder;
 
 use crate::utils::{construct_struct, Env};
 
@@ -179,4 +182,40 @@ pub fn load_file_to_insert_in_db(path: &Path) -> Vec<Env> {
         envs.push(env);
     }
     envs
+}
+
+/// Compresses the database and key + nonce files into a tar
+pub fn compress(name: &str) -> Result<(), std::io::Error> {
+    if !join_app_path("backups").exists() {
+        std::fs::create_dir_all(join_app_path("backups")).unwrap();
+    }
+
+    let archive_file = File::create(join_app_path("backups").join(name)).unwrap();
+    let mut archive = Builder::new(archive_file);
+
+    let mut db_file = File::open(join_app_path("env.db")).unwrap();
+    let mut key_file = File::open(join_app_path("key")).unwrap();
+    let mut nonce_file = File::open(join_app_path("nonce")).unwrap();
+
+    archive
+        .append_file("env.db", &mut db_file)
+        .expect("Failed to append db file");
+    archive
+        .append_file("key", &mut key_file)
+        .expect("Failed to append key file");
+    archive
+        .append_file("nonce", &mut nonce_file)
+        .expect("Failed to append nonce file");
+
+    archive.finish()
+}
+
+/// Decompresses the database and key + nonce files from a tar
+pub fn decompress(name: &str) -> Result<(), std::io::Error> {
+    let archive_file = File::open(join_app_path("backups").join(name)).unwrap();
+    let mut archive = tar::Archive::new(archive_file);
+
+    archive.unpack(get_app_dir_path()).unwrap();
+
+    Ok(())
 }

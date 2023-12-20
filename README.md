@@ -45,6 +45,8 @@ You can later reset this, but you will *lose all your secrets*. So be careful.
 - `load` - Load secrets from a file
 - `all` - Show all secrets
 - `delete` - Remove a secret
+- `backup` - Backup your secrets to a tar file
+- `restore` - Restore your secrets from a tar file
 - `reset` - Reset stuff
 
 For more information, run `envn help`.

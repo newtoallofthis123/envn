@@ -5,7 +5,7 @@ use rusqlite::{params, Connection};
 
 use crate::{
     file::join_app_path,
-    utils::{DisplayEnv, Env, decrypt_struct},
+    utils::{decrypt_struct, DisplayEnv, Env},
 };
 
 pub struct Entry {

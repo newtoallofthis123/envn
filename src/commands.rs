@@ -6,8 +6,9 @@
 use std::{io::Write, path::Path};
 
 use crate::{
-    file::{self, file_exists, load_file_to_insert_in_db},
-    utils::{display_env, DisplayEnv, construct_struct, decrypt_struct}, db::{get_by_name, get_all_names, does_exist, delete_entry_by_name, insert_env},
+    db::{delete_entry_by_name, does_exist, get_all_names, get_by_name, insert_env},
+    file::{self, compress, decompress, file_exists, join_app_path, load_file_to_insert_in_db},
+    utils::{construct_struct, decrypt_struct, display_env, get_date_time, DisplayEnv},
 };
 use bunt::println as print;
 
@@ -21,6 +22,8 @@ pub fn handle_command(cmd: &str, name: Option<String>) {
         "append" => append_env(name),
         "all" => all_command(name),
         "edit" => edit_entry(name),
+        "backup" => backup_command(name),
+        "restore" => restore_command(name),
         "delete" => delete_entry(name),
         "load" => load_file(name),
         "reset" => reset_command(name),
@@ -362,5 +365,39 @@ fn reset_command(command: Option<String>) {
             print!("{$green}Reset Complete{/$}");
         }
         _ => bunt::println!("{$red}Command Not Found{/$}"),
+    }
+}
+
+fn backup_command(name: Option<String>) {
+    let name = match name {
+        Some(name) => match name.ends_with(".tar") {
+            true => name,
+            false => format!("{}.tar", name),
+        },
+        None => format!("envn_backup_{}.tar", get_date_time()),
+    };
+    match compress(&name) {
+        Ok(_) => bunt::println!("{$green}Backup {$white}{}{/$} Created{/$}", name),
+        Err(_) => bunt::println!("{$red}Backup Failed{/$}"),
+    }
+}
+
+fn restore_command(name: Option<String>) {
+    let name = match name {
+        Some(name) => match name.ends_with(".tar") {
+            true => name,
+            false => format!("{}.tar", name),
+        },
+        None => inquire::Text::new("Backup File Name").prompt().unwrap(),
+    };
+
+    if !join_app_path("backups").join(&name).exists() {
+        bunt::println!("{$red}Backup File Not Found{/$}");
+        return;
+    }
+
+    match decompress(&name) {
+        Ok(_) => bunt::println!("{$green}Backup restored from {$white}{}{/$}{/$}", name),
+        Err(_) => bunt::println!("{$red}Backup Failed{/$}"),
     }
 }
