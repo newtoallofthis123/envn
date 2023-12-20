@@ -13,6 +13,8 @@ Written in rust, EnvN is quite fast and efficient. It is also designed to be as 
 
 > You don't need to have SQLite installed on your system. EnvN comes with a pre-compiled SQLite library.
 
+## Tutorial on [YouTube](https://www.youtube.com/watch?v=zeKRaAByPic)
+
 ## Installation
 
 The recommended way to install Envn is to use the cargo package manager.
