@@ -180,3 +180,9 @@ pub fn display_help(cmd: Option<String>) {
         }
     }
 }
+
+/// Utility to get current date and time.
+pub fn get_date_time() -> String {
+    let now = chrono::Local::now();
+    now.format("%Y%m%d_%H:%M:%S").to_string()
+}

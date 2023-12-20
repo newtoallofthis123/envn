@@ -24,3 +24,5 @@ toml = "0.8.8"
 serde = {version = "1", features = ["derive"]}
 dirs = "5.0.1"
 correct_word = "0.1.1"
+chrono = {version = "0.4"}
+tar = "0.4"
