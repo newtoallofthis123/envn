@@ -25,6 +25,8 @@ Please open an issue if you have any suggestions.
 cargo install envn
 ```
 
+## Tutorial on [YouTube](https://www.youtube.com/watch?v=zeKRaAByPic)
+
 ## Usage
 
 ### Initial Setup
